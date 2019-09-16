@@ -1,0 +1,94 @@
+#!/bin/bash
+
+arquivo="./cveReduzido.txt"
+fileTemp=/tmp/fileTemp.dat
+showFile=/tmp/showFile.dat
+vet1=("CVE ID"
+ "CWE ID"
+ "Vulnerability Types"
+ "Publish Date"
+ "Update Date"
+ "CVSS Score" 
+ "Gained Access Level" 
+ "Access" 
+ "Complexity" 
+ "Authentication" 
+ "Confidentialy" 
+ "Integrity" 
+ "Availability" 
+ "Description")
+
+function menu() {
+	choice=$(kdialog --menu "opcoes:" 1 "CVE ID" 2 "Description" 3 "Publish Date" 4 "CWE ID Count" 5 "Score Count" 6 "Export");
+}
+
+function result() {
+	local i=0
+	while IFS= read -r line
+		do
+		if [ $i = ${#vet1[@]} ] ; then
+			i=0
+			echo "-----------------------------------------" >> $showFile
+		fi
+		echo "${vet1[$i]}:  $line" >> $showFile
+		i=`expr $i + 1`
+	done < "$fileTemp"
+	kdialog --textbox $showFile 500 500;
+}
+
+function apagarTempFile() {
+	if [ -f $fileTemp ] ; then
+		rm $fileTemp
+	fi
+	if [ -f $showFile ] ; then
+		rm $showFile
+	fi
+	exit 0
+}
+
+##VALIDAR SE NAO ESTA VAZIO
+function cveId() {
+	val=$(kdialog --title "Filtro" --inputbox "Informe o CVE ID abaixo")
+	egrep ^$val $arquivo | tr "\t" "\n" > $fileTemp
+	result
+}
+
+function description() {
+	val=$(kdialog --title "Filtro" --inputbox "Informe o Description abaixo")
+	egrep "\t[A-Za-z0-9 \,\.\-]*$val.*" $arquivo | tr "\t" "\n" > $fileTemp
+	echo "$(cat $fileTemp)"
+	result
+}
+
+menu
+
+
+case $choice in
+	1) 
+		cveId
+		;;
+	2) 
+		description
+		;;
+	3) 
+		echo "CVE ID 3"
+		;;
+	4) 
+		echo "CVE ID 4"
+		;;
+	5) 
+		echo "CVE ID 5"
+		;;
+	6) 
+		echo "CVE ID 6"
+		;;
+	*) 
+		echo "NAO"
+		;;
+
+esac
+
+apagarTempFile
+
+##filtro da 1
+##egrep ^CVE-2018-1999047 $arquivo
